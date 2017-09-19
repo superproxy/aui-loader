@@ -1,6 +1,6 @@
 {
   "name": "aui-loader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "用于webpack的aui组件解析",
   "main": "index.js",
   "scripts": {
@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/nandy007/aui-loader/issues"
   },
-  "homepage": "https://github.com/nandy007/aui-loader#readme"
+  "homepage": "https://github.com/nandy007/aui-loader#readme",
+  "devDependencies": {
+    "chestnut-utils": "^0.2.1"
+  }
 }
