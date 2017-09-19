@@ -21,7 +21,7 @@
     "url": "https://github.com/nandy007/aui-loader/issues"
   },
   "homepage": "https://github.com/nandy007/aui-loader#readme",
-  "devDependencies": {
+  "dependencies": {
     "chestnut-utils": "^0.2.1"
   }
 }
