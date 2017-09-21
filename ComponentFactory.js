@@ -84,7 +84,7 @@ class ComponentFactory {
             'module.exports.tag = module.exports.tag || module.exports.name;',
             'module.exports.template = ' + stringify(templateStr, true) + ';',
             'module.exports.style = ' + stringify(styleStr, true) + ';',
-            'require("AuiComponent").create(module.exports);'
+            'require("agile-ui").AuiComponent.create(module.exports);'
         ];
 
         this.$module = funcFragments.join('\n');
