@@ -75,17 +75,31 @@ class ComponentFactory {
         }
     }
 
+    parseStyle (styleStr){
+        const imports = [];
+        styleStr = (styleStr||'').replace(/\@import[ ]+url[ ]*\([ ]*([^ \)]+)[ ]*\)[ ]*;?/g, function(s, s1){
+            imports.push('require("'+s1+'");');
+            return '';
+        });
+        return {
+            imports: imports,
+            styleStr: stringify(styleStr, true)
+        }
+    }
+
     createComponent() {
         const { templateStr, moduleStr, styleStr } = this.decompose();
-
+        const styleStruct = this.parseStyle(styleStr);
         const funcFragments = [
             moduleStr,
             '',
             'module.exports.tag = module.exports.tag || module.exports.name;',
             'module.exports.template = ' + stringify(templateStr, true) + ';',
-            'module.exports.style = ' + stringify(styleStr, true) + ';',
+            'module.exports.style = ' + styleStruct.styleStr + ';',
             'require("agile-ui").AuiComponent.create(module.exports);'
         ];
+
+        funcFragments.push.apply(funcFragments, styleStruct.imports);
 
         this.$module = funcFragments.join('\n');
     }
