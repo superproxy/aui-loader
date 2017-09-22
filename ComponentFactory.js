@@ -36,7 +36,9 @@ function stringify(str, isArraySel) {
 
 class ComponentFactory {
 
-    constructor(content) {
+    constructor(loaderContext, content) {
+
+        this.loaderContext = loaderContext;
 
         this.$ = jqlite(content);
 
@@ -78,8 +80,11 @@ class ComponentFactory {
     parseStyle (styleStr){
         const imports = [];
         styleStr = (styleStr||'').replace(/\@import[ ]+url[ ]*\([ ]*([^ \)]+)[ ]*\)[ ]*;?/g, function(s, s1){
-            imports.push('require("'+s1+'");');
-            return '';
+            if(s1.indexOf('.')===0){
+                imports.push('require("'+s1+'");');
+                return '';
+            }
+            return s;
         });
         return {
             imports: imports,
@@ -99,7 +104,7 @@ class ComponentFactory {
             'require("agile-ui").AuiComponent.create(module.exports);'
         ];
 
-        funcFragments.push.apply(funcFragments, styleStruct.imports);
+        funcFragments.unshift.apply(funcFragments, styleStruct.imports);
 
         this.$module = funcFragments.join('\n');
     }
