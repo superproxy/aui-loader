@@ -6,6 +6,9 @@ agile-ui介绍和使用请查看https://github.com/nandy007/agile-ui
 
 aui-loader可以将任意符合如下格式的aui后缀文件加载为webpack的模块：
 
+
+```html
+
 	<ui>
 	<!-- some html fragment -->
 	</ui>
@@ -24,3 +27,5 @@ aui-loader可以将任意符合如下格式的aui后缀文件加载为webpack的
 	<style type="blank|less|sass">
 	
 	</style>
+
+```
