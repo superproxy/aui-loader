@@ -1,8 +1,8 @@
-
+const loaderUtils = require('loader-utils');
 const jqlite = require('chestnut-utils').jqlite;
 
 function stringify(str, isArraySel) {
-
+    str = str || '';
     var htmlArr = str.replace(/\\/g, "\\\\").replace(/\\/g, "\\/").replace(/\'/g, "\\\'").split('\n');
     var len = htmlArr.length;
     var outArr = [];
@@ -33,6 +33,14 @@ function stringify(str, isArraySel) {
     return outArr.join("");
 }
 
+function queryToParams(obj){
+    var arr = [];
+    for(var k in obj){
+        arr.push(k+'='+obj[k]);
+    }
+    return arr.join('&');
+}
+
 
 class ComponentFactory {
 
@@ -40,15 +48,54 @@ class ComponentFactory {
 
         this.loaderContext = loaderContext;
 
+        const options = loaderUtils.getOptions(loaderContext) || {};
+
+        this.initOptions(options);
+        
+        this.query = options;
+
         this.$ = jqlite(content);
 
         const type = this.$('script').attr('type');
 
-        if (type === 'text/javascript') {
+        if(options.only === 'css'){
+            this.createCssModule();
+        }else if (type === 'text/javascript') {
             this.createStringModule();
         } else {
             this.createComponent();
         }
+
+        this.createModule(this.$module);
+    }
+
+    initOptions(options){
+        if(!options.cssloader) options.cssloader = 'style-loader!css-loader';
+        if(!options.csscache) options.csscache = '__auicssloader__';
+
+        this.cssloader = options.cssloader;
+        delete options.cssloader;
+        
+        this.cssStrCacheKey = options.csscache;
+    }
+
+    getPathFromRemainingRequest(){
+        return loaderUtils.getRemainingRequest(this.loaderContext).split('!').pop();
+    }
+
+    set cssCache(str){
+        if(!global[this.cssStrCacheKey]) global[this.cssStrCacheKey] = {};
+        const key = this.getPathFromRemainingRequest();
+        global[this.cssStrCacheKey][key] = str;
+    }
+
+    get cssCache(){
+        const key = this.getPathFromRemainingRequest();
+        return (global[this.cssStrCacheKey] || {})[key] || '';
+    }
+
+    createCssModule(){
+        this.$module = this.cssCache;
     }
 
     createStringModule() {
@@ -66,14 +113,19 @@ class ComponentFactory {
     }
 
     decompose() {
+        const decompose = this._decompose;
+        if(decompose) return decompose;
         const $ = this.$;
         const templateStr = $('ui').html();
         const moduleStr = $('script').html();
         const styleStr = $('style').html();
-        return {
+        return this._decompose = {
             templateStr: templateStr,
             moduleStr: moduleStr,
-            styleStr: styleStr
+            styleObj: {
+                type: $('style').attr('type'),
+                text: styleStr
+            }
         }
     }
 
@@ -92,21 +144,42 @@ class ComponentFactory {
         }
     }
 
+    makeCssReqirePath(){
+        const { templateStr, moduleStr, styleObj } = this.decompose();
+        this.cssCache = styleObj.text;
+        const params = queryToParams(this.query);
+        const cssRequirePaths = [
+            'aui-loader?only=css' + (params?'&'+params:''),
+            './' + loaderUtils.getRemainingRequest(this.loaderContext).split(/[\/\\]/g).pop()
+        ];
+
+        if(styleObj.type) cssRequirePaths.unshift(styleObj.type+'-loader');
+
+        const defaultLoader = this.cssloader;
+        cssRequirePaths.unshift(defaultLoader);
+
+        return cssRequirePaths.join('!');
+    }
+
     createComponent() {
-        const { templateStr, moduleStr, styleStr } = this.decompose();
-        const styleStruct = this.parseStyle(styleStr);
+        const { templateStr, moduleStr, styleObj } = this.decompose();
         const funcFragments = [
             moduleStr,
             '',
             'module.exports.tag = module.exports.tag || module.exports.name;',
             'module.exports.template = ' + stringify(templateStr, true) + ';',
-            'module.exports.style = ' + styleStruct.styleStr + ';',
             'require("agile-ui").AuiComponent.create(module.exports);'
         ];
 
-        funcFragments.unshift.apply(funcFragments, styleStruct.imports);
-
+        funcFragments.unshift.call(funcFragments, 'require("'+this.makeCssReqirePath()+'");');
+        
         this.$module = funcFragments.join('\n');
+
+        
+    }
+
+    createModule(){
+        this.loaderContext.callback(null, this.$module);
     }
 
     getModule() {
