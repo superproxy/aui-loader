@@ -70,7 +70,7 @@ class ComponentFactory {
     }
 
     initOptions(options){
-        if(!options.cssloader) options.cssloader = 'style-loader!css-loader';
+        if(!options.cssloader) options.cssloader = 'style-loader!css-loader!postcss-loader';
         if(!options.csscache) options.csscache = '__auicssloader__';
 
         this.cssloader = options.cssloader;
