@@ -98,9 +98,14 @@ class ComponentFactory {
         this.$module = this.cssCache;
     }
 
+    trim(str){
+        if(!str) return str;
+        return str.trim();
+    }
+
     createStringModule() {
         const $ = this.$;
-        const moduleStr = $('script').html();
+        const moduleStr = this.trim($('script').html());
 
         const funcFragments = [
             'const __mod__ = {exports:{}};',
@@ -116,9 +121,9 @@ class ComponentFactory {
         const decompose = this._decompose;
         if(decompose) return decompose;
         const $ = this.$;
-        const templateStr = $('ui').html();
-        const moduleStr = $('script').html();
-        const styleStr = $('style').html();
+        const templateStr = this.trim($('ui').html());
+        const moduleStr = this.trim($('script').html());
+        const styleStr = this.trim($('style').html());
         return this._decompose = {
             templateStr: templateStr,
             moduleStr: moduleStr,
