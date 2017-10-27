@@ -39,7 +39,7 @@ aui-loader可以将任意符合如下格式的aui后缀文件加载为webpack的
 
 ## 在requirejs中使用
 
-在requirejs环境下使用，请拷贝dist文件夹在的aui-loader.amd.js文件到任意目录，且必须配置requirejs如下：
+在requirejs环境下使用，请拷贝dist文件夹在的aui.js文件到任意目录，且必须配置requirejs如下：
 
 ```javascript
 
