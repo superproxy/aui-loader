@@ -47,9 +47,9 @@ require.config({
 	urlArgs: "r=" + (new Date()).getTime(),
     paths: {
     	'less': 'less',// 使用less时必须
-    	'agile-vm': 'agile.vm.browser.min',// 必须
-    	'agile-ui': 'agile.ui',// 必须
-    	'aui-loader': 'aui-loader.amd'
+    	'agile-vm': 'agile.vm.browser.min',// 必须，https://github.com/nandy007/agile-vm
+    	'agile-ui': 'agile.ui',// 必须，https://github.com/nandy007/agile-ui
+    	'aui': '改名后的aui.js文件'//如果不改名则不需要配置，一旦改名请务必确保配置为aui
     }
 });
 
@@ -66,8 +66,9 @@ require.config({
 比如：
 
 ```javascript
-require(['aui-loader'], function(loader){
+require(['aui'], function(loader){
 	loader.addStyleHandler('sass', function(o, cb){
+		// this指向的是requirejs的plugin的load回调函数的参数数组
 		// 处理o，及原始的style标签的内容
 		var renderContent = *****;
 		cb(renderContent);

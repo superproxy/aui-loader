@@ -1,9 +1,3 @@
-/**
- *aui-loader aui组件加载器
- *Version: 0.2.0.1509011446631
- *Author: nandy007
- *License MIT @ https://github.com/nandy007/aui-loader
-*/
 define(['agile-vm', 'agile-ui'], function ($, aui) {
 	var styleHandlers = {
 		'text': function (o, cb) {
@@ -24,12 +18,13 @@ define(['agile-vm', 'agile-ui'], function ($, aui) {
 		//Component.style = $style.content;
 		Component.template = templateStr;
 		//onload(new AuiComponent(Component));
-
+		
 		var styleHandler = styleHandlers[$style.type] || styleHandlers['text'];
 
-		styleHandler.call(this, $style.content, function (content) {
-			Component.style = content;
-			cb(new AuiComponent(Component));
+		styleHandler.call(this, $style.content||'', function (content) {
+			Component.style = content||'';
+			AuiComponent.create(Component);
+			cb(Component);
 		});
 	};
 	return {
@@ -37,7 +32,7 @@ define(['agile-vm', 'agile-ui'], function ($, aui) {
 			var _args = arguments;
 			var auiPath = parentRequire.toUrl(name);
 			var auiPaths = auiPath.split('?');
-			if (auiPaths[0].split('/').pop() !== 'aui') {
+			if (auiPaths[0].split('.').pop() !== 'aui') {
 				auiPaths[0] = auiPaths[0] + '.aui';
 				auiPath = auiPaths.join('?');
 			}
@@ -54,22 +49,29 @@ define(['agile-vm', 'agile-ui'], function ($, aui) {
 					if (!moduleStr) {
 						return onload.error(new Error('模块[' + name + ']不符合auicomponent规范'));
 					}
-
-					var func = new Function('module', 'exports', 'require', 'define', moduleStr),
-						module = { exports: {} };
-					func(module, module.exports, require, function () {
-						var args = Array.prototype.slice.call(arguments, 0), 
-							cb = args.pop(),
-							deps = args.pop() || [];
+					try{
+						var func = new Function('module', 'exports', 'require', 'define', moduleStr),
+							module = { exports: {} };
 						
-						require(deps, function(){
-							var anestor = cb.apply(cb, arguments);
-							createComponent.call(_args, anestor, templateStr, $style, onload);
+						func(module, module.exports, require, function () {
+							
+							var args = Array.prototype.slice.call(arguments, 0), 
+								cb = args.pop(),
+								deps = args.pop() || [];
+
+							require(deps, function(){
+								var anestor = cb.apply(cb, arguments);
+								createComponent.call(_args, anestor, templateStr, $style, onload);
+							});
+							
 						});
-					});
-					var anestor = module.exports;
-					if(anestor){
-						createComponent.call(_args, anestor, templateStr, $style, onload);
+						var anestor = module.exports;
+						if(anestor && typeof anestor==='function'){
+							createComponent.call(_args, anestor, templateStr, $style, onload);
+						}
+					}catch(e){
+						console.log(name, moduleStr, e);
+						onload.error(new Error('模块[' + name + ']加载失败'));
 					}
 
 				},
