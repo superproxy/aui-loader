@@ -11,7 +11,7 @@ define(['agile-ui'], function(aui) {
 		},
 		'less' : function(o, cb) {
 			var fileUrl = this[0];
-			require(['./less', './lessc', './normalize'], function(less, lessc, normalize) {
+			require(['less', 'lessc', 'normalize'], function(less, lessc, normalize) {
 				var parser = new lessc.Parser(window.less);
 				parser.parse(o, function(err, tree) {
 					if (err)
