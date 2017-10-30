@@ -1,19 +1,30 @@
 /**
   * aui-loader aui组件加载器
-  * Version: 0.2.5.1509329533339
+  * Version: 0.2.6.1509346559282
   * Author: nandy007
   * License MIT @ https://github.com/nandy007/aui-loader
   */
 define(['agile-ui'], function(aui) {
+	var base = document.getElementsByTagName('base');
+	base = base && base[0] && base[0] && base[0].href;
+	var pagePath = (base || window.location.href.split('#')[0].split('?')[0]).split('/');
+	pagePath[pagePath.length - 1] = '';
+	pagePath = pagePath.join('/');
+	
 	var styleHandlers = {
 		'text' : function(o, cb) {
 			cb(o);
 		},
 		'less' : function(o, cb) {
-			require(['less'], function(less) {
-				less.render(o, function(e, tree) {
-					cb(tree.css);
-				});
+			var fileUrl = this[0];
+			require(['./less', './lessc', './normalize'], function(less, lessc, normalize) {
+				var parser = new lessc.Parser(window.less);
+				parser.parse(o, function(err, tree) {
+					if (err)
+						return cb('');
+					var css = normalize(tree.toCSS(), normalize.absoluteURI(fileUrl, pagePath), pagePath);
+					cb(css);
+				}, window.less);
 			});
 		}
 	};
@@ -61,7 +72,7 @@ define(['agile-ui'], function(aui) {
 			for (var i = 0,
 			    len = $auiChildren.length; i < len; i++) {
 				var $target = $auiChildren[i],
-				    tag = ($target.tagName||'').toLowerCase();
+				    tag = ($target.tagName || '').toLowerCase();
 				if (tag === 'style') {
 					auiInfo[tag] = {
 						type : $target.getAttribute('type'),
@@ -72,7 +83,7 @@ define(['agile-ui'], function(aui) {
 				}
 
 			}
-			
+
 			var templateStr = auiInfo.ui,
 			    moduleStr = auiInfo.script,
 			    $style = auiInfo.style || {};
