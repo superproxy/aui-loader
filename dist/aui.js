@@ -1,6 +1,6 @@
 /**
   * aui-loader aui组件加载器
-  * Version: 0.2.7.1509348231579
+  * Version: 0.2.8.1509351083749
   * Author: nandy007
   * License MIT @ https://github.com/nandy007/aui-loader
   */
@@ -29,18 +29,6 @@ define(['agile-ui'], function(aui) {
 		}
 	};
 
-	var getAui = function(url) {
-		var xmlhttp;
-		if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
-			xmlhttp = new XMLHttpRequest();
-		} else {// code for IE6, IE5
-			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		xmlhttp.open("GET", url, false);
-		xmlhttp.send();
-		return xmlhttp.responseText || '';
-	};
-
 	var createComponent = function(anestor, templateStr, $style, cb) {
 		var Component = anestor;
 		var AuiComponent = aui.AuiComponent;
@@ -56,7 +44,18 @@ define(['agile-ui'], function(aui) {
 			cb(Component);
 		});
 	};
-	return {
+	var _loader = {
+		getAui: function(url) {
+			var xmlhttp;
+			if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+				xmlhttp = new XMLHttpRequest();
+			} else {// code for IE6, IE5
+				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlhttp.open("GET", url, false);
+			xmlhttp.send();
+			return xmlhttp.responseText || '';
+		},
 		load : function(name, parentRequire, onload, config) {
 			var _args = arguments;
 			var auiPath = parentRequire.toUrl(name);
@@ -66,7 +65,7 @@ define(['agile-ui'], function(aui) {
 				auiPath = auiPaths.join('?');
 			}
 			var $aui = document.createElement('div');
-			$aui.innerHTML = getAui(auiPath);
+			$aui.innerHTML = _loader.getAui(auiPath);
 			var auiInfo = {};
 			var $auiChildren = $aui.children;
 			for (var i = 0,
@@ -123,4 +122,5 @@ define(['agile-ui'], function(aui) {
 			styleHandlers[k] = func;
 		}
 	};
+	return _loader;
 });
