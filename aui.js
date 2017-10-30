@@ -45,7 +45,7 @@ define(['agile-ui'], function(aui) {
 		var styleHandler = styleHandlers[$style.type] || styleHandlers['text'];
 
 		styleHandler.call(this, $style.content || '', function(content) {
-			Component.style = content || '';
+			if(content) Component.style = content;
 			AuiComponent.create(Component);
 			cb(Component);
 		});
