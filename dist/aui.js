@@ -1,6 +1,6 @@
 /**
   * aui-loader aui组件加载器
-  * Version: 0.2.9.1509353517263
+  * Version: 0.3.0.1509437208447
   * Author: nandy007
   * License MIT @ https://github.com/nandy007/aui-loader
   */
@@ -40,6 +40,7 @@ define(['agile-ui'], function(aui) {
 
 		styleHandler.call(this, $style.content || '', function(content) {
 			if(content) Component.style = content;
+			if(!Component.tag) Component.tag = Component.name || '';
 			AuiComponent.create(Component);
 			cb(Component);
 		});

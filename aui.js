@@ -34,6 +34,7 @@ define(['agile-ui'], function(aui) {
 
 		styleHandler.call(this, $style.content || '', function(content) {
 			if(content) Component.style = content;
+			if(!Component.tag) Component.tag = Component.name || '';
 			AuiComponent.create(Component);
 			cb(Component);
 		});
