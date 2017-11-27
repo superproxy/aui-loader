@@ -1,52 +1,27 @@
 /**
   * aui-loader aui组件加载器
-  * Version: 0.3.0.1509437208447
+  * Version: 0.3.1.1511765891644
   * Author: nandy007
   * License MIT @ https://github.com/nandy007/aui-loader
   */
+
 define(['agile-ui'], function(aui) {
-	var base = document.getElementsByTagName('base');
-	base = base && base[0] && base[0] && base[0].href;
-	var pagePath = (base || window.location.href.split('#')[0].split('?')[0]).split('/');
-	pagePath[pagePath.length - 1] = '';
-	pagePath = pagePath.join('/');
 	
-	var styleHandlers = {
-		'text' : function(o, cb) {
-			cb(o);
-		},
-		'less' : function(o, cb) {
-			var fileUrl = this[0];
-			require(['less', 'lessc', 'normalize'], function(less, lessc, normalize) {
-				var parser = new lessc.Parser(window.less);
-				parser.parse(o, function(err, tree) {
-					if (err)
-						return cb('');
-					var css = normalize(tree.toCSS(), normalize.absoluteURI(fileUrl, pagePath), pagePath);
-					cb(css);
-				}, window.less);
-			});
-		}
-	};
-
-	var createComponent = function(anestor, templateStr, $style, cb) {
-		var Component = anestor;
-		var AuiComponent = aui.AuiComponent;
-		//Component.style = $style.content;
-		Component.template = templateStr;
-		//onload(new AuiComponent(Component));
-
-		var styleHandler = styleHandlers[$style.type] || styleHandlers['text'];
-
-		styleHandler.call(this, $style.content || '', function(content) {
-			if(content) Component.style = content;
-			if(!Component.tag) Component.tag = Component.name || '';
-			AuiComponent.create(Component);
-			cb(Component);
-		});
-	};
 	var _loader = {
-		getAui: function(url) {
+		patchPath: function(p){
+			if(p.split('').pop()!=='/') return p + '/';
+			return p;
+		},
+		getParent: function(p){
+			if(p.indexOf('/')<0){
+				return './';
+			}
+			var ps = p.split('/');
+			ps.pop();
+			p = ps.join('/') + '/';
+			return p;
+		},
+		request: function(url) {
 			var xmlhttp;
 			if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
 				xmlhttp = new XMLHttpRequest();
@@ -55,7 +30,7 @@ define(['agile-ui'], function(aui) {
 			}
 			xmlhttp.open("GET", url, false);
 			xmlhttp.send();
-			return xmlhttp.responseText || '';
+			return xmlhttp.status===200 ? xmlhttp.responseText : '' ;
 		},
 		load : function(name, parentRequire, onload, config) {
 			var _args = arguments;
@@ -66,7 +41,7 @@ define(['agile-ui'], function(aui) {
 				auiPath = auiPaths.join('?');
 			}
 			var $aui = document.createElement('div');
-			$aui.innerHTML = _loader.getAui(auiPath);
+			$aui.innerHTML = _loader.request(auiPath);
 			var auiInfo = {};
 			var $auiChildren = $aui.children;
 			for (var i = 0,
@@ -123,5 +98,72 @@ define(['agile-ui'], function(aui) {
 			styleHandlers[k] = func;
 		}
 	};
+
+	var base = document.getElementsByTagName('base');
+	base = base && base[0] && base[0] && base[0].href;
+	var pagePath = (base || window.location.href.split('#')[0].split('?')[0]).split('/');
+	pagePath[pagePath.length - 1] = '';
+	pagePath = _loader.patchPath(pagePath.join('/'));
+	
+	var styleHandlers = {
+		'text' : function(o, cb) {
+			cb(o);
+		},
+		'less' : function(o, cb) {
+			var _this = this;
+			require(['less', 'lessc', 'normalize'], function(less, lessc, normalize) {
+				var fileUrl = _this[0], baseUrl = _this[3].baseUrl, parentPath = _loader.getParent(normalize.absoluteURI(fileUrl, baseUrl));	
+				var curPath = normalize.absoluteURI(fileUrl+'.less', baseUrl);
+				var parser = new lessc.Parser({
+					filename: curPath
+				});
+				parser.parse(o, function(err, tree) {
+					if (err)
+						return cb('');
+					var css = normalize(tree.toCSS(), _loader.getParent(normalize.absoluteURI(fileUrl, baseUrl)), pagePath);
+					cb(css);
+				}, window.less);
+			});
+		},
+		'sass' : function(o, cb){
+			//https://github.com/medialize/sass.js
+			var _this = this;
+			require(['sass', 'normalize'], function(Sass, normalize) {
+				var fileUrl = _this[0], baseUrl = _this[3].baseUrl, parentPath = _loader.getParent(normalize.absoluteURI(fileUrl, baseUrl));
+				Sass.importer(function(request, done) {
+					var importPath = normalize.absoluteURI(normalize.absoluteURI('in.scss', parentPath), pagePath);
+					var importContent = _loader.request(importPath);
+					done({path: importPath, content: importContent});
+				});
+				Sass.compile(o, function(result) {
+					if(result.status===0 && result.text){
+						var css = normalize(result.text, parentPath, pagePath);
+						cb(css);
+					}else{
+						console.log(result);
+						cb('');
+					}
+				});
+			});
+		}
+	};
+
+	var createComponent = function(anestor, templateStr, $style, cb) {
+		var Component = anestor;
+		var AuiComponent = aui.AuiComponent;
+		//Component.style = $style.content;
+		Component.template = templateStr;
+		//onload(new AuiComponent(Component));
+
+		var styleHandler = styleHandlers[$style.type] || styleHandlers['text'];
+
+		styleHandler.call(this, $style.content || '', function(content) {
+			if(content) Component.style = content;
+			if(!Component.tag) Component.tag = Component.name || '';
+			AuiComponent.create(Component);
+			cb(Component);
+		});
+	};
+
 	return _loader;
 });
