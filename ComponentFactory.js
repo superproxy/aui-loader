@@ -174,7 +174,7 @@ class ComponentFactory {
             '(function(){',
             'var __$$curComponent$$__ = module.exports.default || module.exports;',
             'if(!__$$curComponent$$__.tag) __$$curComponent$$__.tag = __$$curComponent$$__.name;',
-            'if(!__$$curComponent$$__.template) __$$curComponent$$__.template = ' + stringify(templateStr, true) + ';console.log(__$$curComponent$$__);',
+            'if(!__$$curComponent$$__.template) __$$curComponent$$__.template = ' + stringify(templateStr, true) + ';',
             'require("agile-ui").AuiComponent.create(__$$curComponent$$__);',
             '})()',
         ];
