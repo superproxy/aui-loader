@@ -171,9 +171,12 @@ class ComponentFactory {
         const funcFragments = [
             moduleStr,
             '',
-            'module.exports.tag = module.exports.tag || module.exports.name;',
-            'module.exports.template = ' + stringify(templateStr, true) + ';',
-            'require("agile-ui").AuiComponent.create(module.exports);'
+            '(function(){',
+            'var __$$curComponent$$__ = module.exports.default || module.exports;',
+            'if(!__$$curComponent$$__.tag) __$$curComponent$$__.tag = __$$curComponent$$__.name;',
+            'if(!__$$curComponent$$__.template) __$$curComponent$$__.template = ' + stringify(templateStr, true) + ';console.log(__$$curComponent$$__);',
+            'require("agile-ui").AuiComponent.create(__$$curComponent$$__);',
+            '})()',
         ];
 
         funcFragments.unshift.call(funcFragments, 'require("'+this.makeCssReqirePath()+'");');
