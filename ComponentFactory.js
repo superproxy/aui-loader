@@ -17,7 +17,7 @@ function stringify(str, isArraySel) {
             }
 
         });
-        outArr.push("].join(\"\\n\");");
+        outArr.push("].join(\"\\n\")");
     } else {
         htmlArr.forEach(function (value, index) {
 
@@ -171,12 +171,7 @@ class ComponentFactory {
         const funcFragments = [
             moduleStr,
             '',
-            '(function(){',
-            'var __$$curComponent$$__ = module.exports.default || module.exports;',
-            'if(!__$$curComponent$$__.tag) __$$curComponent$$__.tag = __$$curComponent$$__.name;',
-            'if(!__$$curComponent$$__.template) __$$curComponent$$__.template = ' + stringify(templateStr, true) + ';',
-            'require("agile-ui").AuiComponent.create(__$$curComponent$$__);',
-            '})()',
+            'require("agile-ui").AuiComponent.create(module.exports.default || module.exports, ' + stringify(templateStr, true) + ');'
         ];
 
         funcFragments.unshift.call(funcFragments, 'require("'+this.makeCssReqirePath()+'");');
