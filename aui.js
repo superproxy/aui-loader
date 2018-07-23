@@ -70,12 +70,16 @@ define(['agile-ui'], function(aui) {
 
 					var args = Array.prototype.slice.call(arguments, 0),
 					    cb = args.pop(),
-					    deps = args.pop() || [];
-
-					require(deps, function() {
+						deps = args.pop() || [];
+					function getCreate() {
 						var anestor = cb.apply(cb, arguments);
 						createComponent.call(_args, anestor, templateStr, $style, onload);
-					});
+					}
+					if(deps.length===0){
+						getCreate();
+					}else{
+						require(deps, getCreate);
+					}
 
 				});
 				var anestor = module.exports;
