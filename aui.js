@@ -163,5 +163,5 @@ define(['agile-ui'], function(aui) {
 		});
 	};
 
-	return _loader;
+	return window.auiloader = _loader;
 });
