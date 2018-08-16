@@ -1,4 +1,6 @@
 
+const str = `
+window.__AGILE_UI_NAME__ = 'agile-ui';
 define(['agile-ui'], function(aui) {
 	
 	var _loader = {
@@ -165,3 +167,9 @@ define(['agile-ui'], function(aui) {
 
 	return window.auiloader = _loader;
 });
+
+`;
+
+if(window.define && window.define.amd){
+	(new Function(str))();
+}

@@ -47,7 +47,7 @@ require.config({
 	urlArgs: "r=" + (new Date()).getTime(),
     paths: {
     	'less': 'less',// 使用less时必须
-    	'agile-vm': 'agile.vm.browser.min',// 必须，https://github.com/nandy007/agile-vm
+    	'agile-ce': 'agile.ce.native.min',// 必须，https://github.com/nandy007/agile-ce
     	'agile-ui': 'agile.ui',// 必须，https://github.com/nandy007/agile-ui
     	'aui': '改名后的aui.js文件'//如果不改名则不需要配置，一旦改名请务必确保配置为aui
     }

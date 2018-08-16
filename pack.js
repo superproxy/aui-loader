@@ -1,5 +1,6 @@
 var path = require('path'),
     fs = require('fs');
+var UglifyJS = require("uglify-es");
 
 console.log('文件打包开始');
 
@@ -7,7 +8,13 @@ var packageJSON = require('./package.json');
 
 var fileName = 'aui.js'
 
-var content = fs.readFileSync('./'+fileName);
+var content = fs.readFileSync('./'+fileName, 'utf8');
+var result = UglifyJS.minify(content);
+if(result.error){
+    console.error(result.error);
+}else{
+    content = result.code;
+}
 
 const arr = [];
 arr.push('/**');
