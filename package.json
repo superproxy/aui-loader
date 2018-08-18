@@ -1,6 +1,6 @@
 {
   "name": "aui-loader",
-  "version": "0.3.9",
+  "version": "0.3.11",
   "description": "用于webpack的aui组件解析",
   "main": "index.js",
   "scripts": {

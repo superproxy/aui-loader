@@ -33,9 +33,10 @@ function stringify(str, isArraySel) {
     return outArr.join("");
 }
 
-function queryToParams(obj){
+function queryToParams(obj, exclude){
     var arr = [];
     for(var k in obj){
+        if(exclude&&exclude.indexOf(k)>-1) continue;
         arr.push(k+'='+obj[k]);
     }
     return arr.join('&');
@@ -73,10 +74,27 @@ class ComponentFactory {
         if(!options.cssloader) options.cssloader = 'style-loader!css-loader!postcss-loader';
         if(!options.csscache) options.csscache = '__auicssloader__';
 
-        this.cssloader = options.cssloader;
-        delete options.cssloader;
+        this.cssloader = this.getCssloaderStr(options.cssloader);
+        // delete options.cssloader;
         
         this.cssStrCacheKey = options.csscache;
+    }
+
+    getCssloaderStr(cssloader){
+        if(!(cssloader instanceof Array)) return cssloader;
+        let myuse = cssloader;
+        myuse = myuse.map((lo) => {
+            if (typeof lo === 'string') return lo;
+            return lo.loader.replace(/[\\]+/g, '/') + (function (options) {
+                if (!options) return '';
+                let args = [];
+                for (let k in options) {
+                    args.push(k + '=' + options[k]);
+                }
+                return '?' + args.join('&');
+            })(lo.options);
+        });
+        return myuse.join('!');
     }
 
     getPathFromRemainingRequest(){
@@ -152,7 +170,7 @@ class ComponentFactory {
     makeCssReqirePath(){
         const { templateStr, moduleStr, styleObj } = this.decompose();
         this.cssCache = styleObj.text;
-        const params = queryToParams(this.query);
+        const params = queryToParams(this.query, ['cssloader']);
         const cssRequirePaths = [
             'aui-loader?only=css' + (params?'&'+params:''),
             './' + loaderUtils.getRemainingRequest(this.loaderContext).split(/[\/\\]/g).pop()

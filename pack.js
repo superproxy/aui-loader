@@ -9,6 +9,10 @@ var packageJSON = require('./package.json');
 var fileName = 'aui.js'
 
 var content = fs.readFileSync('./'+fileName, 'utf8');
+content = ['const str = \`', content,`\`;
+if(window.define && window.define.amd){
+	(new Function(str))();
+}`].join('');
 var result = UglifyJS.minify(content);
 if(result.error){
     console.error(result.error);
