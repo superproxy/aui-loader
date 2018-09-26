@@ -76,15 +76,18 @@ class ComponentFactory {
 
         this.cssloader = this.getCssloaderStr(options.cssloader);
         // delete options.cssloader;
+
+        this.precssloader = this.getCssloaderStr(options.precssloader);
         
         this.cssStrCacheKey = options.csscache;
     }
 
     getCssloaderStr(cssloader){
-        if(!(cssloader instanceof Array)) return cssloader;
+        if(!cssloader) return '';
+        if(!(cssloader instanceof Array)) return cssloader.replace(/[\\]+/g, '/');
         let myuse = cssloader;
         myuse = myuse.map((lo) => {
-            if (typeof lo === 'string') return lo;
+            if (typeof lo === 'string') return lo.replace(/[\\]+/g, '/');
             return lo.loader.replace(/[\\]+/g, '/') + (function (options) {
                 if (!options) return '';
                 let args = [];
@@ -175,6 +178,8 @@ class ComponentFactory {
             'aui-loader?only=css' + (params?'&'+params:''),
             './' + loaderUtils.getRemainingRequest(this.loaderContext).split(/[\/\\]/g).pop()
         ];
+
+        if(this.precssloader) cssRequirePaths.unshift(this.precssloader);
 
         if(styleObj.type) cssRequirePaths.unshift(styleObj.type+'-loader');
 

@@ -1,6 +1,6 @@
 /**
   * aui-loader aui组件加载器
-  * Version: 0.3.11.1534566532192
+  * Version: 0.3.12.1537926116617
   * Author: nandy007
   * License MIT @ https://github.com/nandy007/aui-loader
   */
