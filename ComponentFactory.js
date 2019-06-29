@@ -64,7 +64,7 @@ class ComponentFactory {
         }else if (type === 'text/javascript') {
             this.createStringModule();
         } else {
-            this.createComponent();
+            this.createComponent(options);
         }
 
         this.createModule(this.$module);
@@ -138,18 +138,32 @@ class ComponentFactory {
         this.$module = funcFragments.join('\n');
     }
 
-    decompose() {
+    decompose(options) {
         const decompose = this._decompose;
         if(decompose) return decompose;
         const $ = this.$;
         const templateStr = this.trim($('ui').html());
         const moduleStr = this.trim($('script').html());
-        const styleStr = this.trim($('style').html());
+        let styleStr = this.trim($('style').html());
+        const styleType = $('style').attr('type') || 'css';
+        let globalCss = options && options[styleType+'Global'];
+        if(styleStr && globalCss){
+            if(typeof globalCss==='string'){
+                globalCss = [globalCss];
+            }
+            const csss = [];
+            globalCss.forEach((u)=>{
+                csss.push(`@import '${u}';`);
+            });
+            csss.push(styleStr);
+            styleStr = csss.join('\n');
+        }
+
         return this._decompose = {
             templateStr: templateStr,
             moduleStr: moduleStr,
             styleObj: {
-                type: $('style').attr('type'),
+                type: styleType,
                 text: styleStr
             }
         }
@@ -181,7 +195,7 @@ class ComponentFactory {
 
         if(this.precssloader) cssRequirePaths.unshift(this.precssloader);
 
-        if(styleObj.type) cssRequirePaths.unshift(styleObj.type+'-loader');
+        if(styleObj.type && styleObj.type!=='css') cssRequirePaths.unshift(styleObj.type+'-loader');
 
         const defaultLoader = this.cssloader;
         cssRequirePaths.unshift(defaultLoader);
@@ -189,12 +203,13 @@ class ComponentFactory {
         return cssRequirePaths.join('!');
     }
 
-    createComponent() {
-        const { templateStr, moduleStr, styleObj } = this.decompose();
+    createComponent(options) {
+        const { templateStr, moduleStr, styleObj } = this.decompose(options);
+        const auiClassStr = options.auiclass || `require("agile-ui")`; // 可指定aui类全局变量
         const funcFragments = [
             moduleStr,
             '',
-            'require("agile-ui").AuiComponent.create(module.exports.default || module.exports, ' + stringify(templateStr, true) + ');'
+            `${auiClassStr}.AuiComponent.create(module.exports.default || module.exports, ` + stringify(templateStr, true) + ');'
         ];
 
         funcFragments.unshift.call(funcFragments, 'require("'+this.makeCssReqirePath()+'");');
